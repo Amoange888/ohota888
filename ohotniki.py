@@ -23,7 +23,8 @@ for i in range(WOLF_COUNT):
     wolf = {
         "x": random.randint(0,COLS - 1),
         "y": random.randint(0,ROWS - 1),
-        "age": 0
+        "age": 0,
+        "energy":  0
     }
     wolves.append(wolf)
 root = tk.Tk()
@@ -61,6 +62,7 @@ def hunt():
         for rabbit in rabbits[:]:
             if wolf["x"] == rabbit["x"] and wolf["y"] == rabbit["y"]:
                 rabbits.remove(rabbit)
+                wolf["energy"] += 3
                 break
 def reproduce_rabbits():
     for rabbit in rabbits[:]:
@@ -72,7 +74,7 @@ def reproduce_rabbits():
             }
             rabbits.append(new_rabbit)
 def age_animals():
-   for wolf in wolves:
+   for wolf in wolves[:]:
        wolf["age"] += 1
        if wolf["age"] >= max_AGE:
            wolves.remove(wolf)
@@ -81,8 +83,33 @@ def age_animals():
         if rabbit["age"] >= max_AGE:
             rabbits.remove(rabbit)
 
+def reproduce_wolves():
+    for wolf in wolves[:]:
+        if wolf["energy"] >= 3:
+            chance = 0.15
+        elif wolf["energy"] >= 1:
+            chance = 0.02
+        else:
+            continue
 
-def update_stast():
+        if random.random() < chance:
+            new_wolf = {
+                "x": wolf["x"],
+                "y": wolf["y"],
+                "age": 0,
+                "energy": 0
+            }
+            wolf["energy"] -= 2
+            wolves.append(new_wolf)
+def wolf_hunger():
+    for wolf in wolves[:]:
+        wolf["energy"] -= 1
+        if wolf["energy"] < 0:
+            wolves.remove(wolf)
+
+
+
+def update_stats():
     stats_label.config(
         text = f"День: {day}| Кролики: {len(rabbits)}| Волки: {len(wolves)}"
     )
@@ -93,7 +120,9 @@ def next_turn():
     move_animals(rabbits)
     move_animals(wolves)
     hunt()
+    wolf_hunger()
     reproduce_rabbits()
+    reproduce_wolves()
     age_animals()
     print("Кроликов", len(rabbits))
     print("Волков", len(wolves))
@@ -108,7 +137,8 @@ def next_turn():
                 x1 + CELL_SIZE, y1 + CELL_SIZE,
                 outline = "black"
             )
-    draw_animals() 
+    draw_animals()
+    update_stats() 
 
 def draw_animals():
     for rabbit in rabbits:
@@ -129,9 +159,9 @@ def draw_animals():
             x + CELL_SIZE - 5, y + CELL_SIZE - 5,
             fill = "green"
         )
-    update_stast()
+update_stats()
 draw_animals()
 button = tk.Button(root, text = "Отправить Ракеты на Киев", command = next_turn)
 button.pack()
-update_stast()
+update_stats()
 root.mainloop()
